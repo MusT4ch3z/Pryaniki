@@ -28,7 +28,6 @@ export default function LoginPage() {
   const [isErrorOpen, setIsErrorOpen] = useState(false);
   const fromPage = location.state?.from?.pathname || "/";
 
-  console.log(error);
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
