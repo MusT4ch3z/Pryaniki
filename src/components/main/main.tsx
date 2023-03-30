@@ -8,11 +8,14 @@ import {
 import {
   Alert,
   CircularProgress,
+  CssBaseline,
   IconButton,
+  Paper,
   Snackbar,
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
 } from "@mui/material";
@@ -28,13 +31,23 @@ import dayjs from "dayjs";
 import { SlideTransition } from "../authentication/LoginPage";
 
 const Main = () => {
-  const { data, isLoading, isSuccess } = useGetCompanyQuery();
-  const [addCompany] = useCreateCompanyMutation();
-  const [deleteCompany] = useDeleteCompanyMutation();
-  const [setCompany] = useSetCompanyMutation();
+  const { data, isLoading, isSuccess, isFetching } = useGetCompanyQuery();
+  const [
+    addCompany,
+    { isLoading: isLoadingCreateReq, originalArgs: addCompanyArgs },
+  ] = useCreateCompanyMutation();
+  const [
+    deleteCompany,
+    { isLoading: isLoadingDeleteReq, originalArgs: deleteCompanyArgs },
+  ] = useDeleteCompanyMutation();
+  const [
+    setCompany,
+    { isLoading: isLoadingSetReq, originalArgs: setCompanyArgs },
+  ] = useSetCompanyMutation();
   const [tableRows, setTableRows] = useState<ICompanyData[]>([]);
   const [error, setError] = useState<string>("");
   const [isErrorOpen, setIsErrorOpen] = useState(false);
+  console.log(tableRows);
 
   const errorHandler = (e: {
     data: {
@@ -56,22 +69,36 @@ const Main = () => {
     isSuccess &&
       !isLoading &&
       setTableRows([
-        ...data.data,
+        ...data.data.map((item) => ({
+          ...item,
+          isEditMode: tableRows.find(({ id }) => id === item.id)?.isEditMode,
+        })),
         ...tableRows.filter(({ isNewCompany }: ICompanyData) => isNewCompany),
       ]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isLoading, isSuccess]);
 
   const onChange = (
-    e: { target: { value: string; name: string } },
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     row: ICompanyData
   ) => {
-    const value = e.target.value;
-    const name = e.target.name;
+    const value = e!.target.value;
+    const name = e!.target.name;
     const { id } = row;
     const newRows = tableRows.map((row: ICompanyData) => {
       if (row.id === id) {
-        return { ...row, [name]: value };
+        return { ...row, [name as keyof ICompanyData]: value };
+      } else return row;
+    });
+    setTableRows(newRows);
+  };
+
+  const onChangeDate = (e: any, row: ICompanyData, name: string) => {
+    const value = e!;
+    const { id } = row;
+    const newRows = tableRows.map((row: ICompanyData) => {
+      if (row.id === id) {
+        return { ...row, [name as keyof ICompanyData]: value };
       } else return row;
     });
     setTableRows(newRows);
@@ -152,137 +179,169 @@ const Main = () => {
 
   return (
     <div>
+      <CssBaseline />
       <Navbar />
+      <Snackbar
+        open={isErrorOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseError}
+        TransitionComponent={SlideTransition}
+      >
+        <Alert
+          onClose={handleCloseError}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          {error}
+        </Alert>
+      </Snackbar>
       {isLoading ? (
         <CircularProgress
-          size="lg"
+          size={60}
           sx={{ position: "absolute", top: "50%", left: "50%" }}
         />
       ) : (
         isSuccess && (
-          <>
-            <Snackbar
-              open={isErrorOpen}
-              autoHideDuration={6000}
-              onClose={handleCloseError}
-              TransitionComponent={SlideTransition}
-            >
-              <Alert
-                onClose={handleCloseError}
-                severity="error"
-                sx={{ width: "100%" }}
-              >
-                {error}
-              </Alert>
-            </Snackbar>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>companySigDate</TableCell>
-                  <TableCell>companySignatureName</TableCell>
-                  <TableCell>documentName</TableCell>
-                  <TableCell>documentStatus</TableCell>
-                  <TableCell>documentType</TableCell>
-                  <TableCell>employeeNumber</TableCell>
-                  <TableCell>employeeSigDate</TableCell>
-                  <TableCell>employeeSignatureName</TableCell>
-                  <TableCell width={80} />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {tableRows?.map((row: ICompanyData) => (
-                  <TableRow key={row.id || dayjs().valueOf()}>
-                    <CustomTableCell
-                      row={row}
-                      name="companySigDate"
-                      onChange={onChange}
-                    />
-                    <CustomTableCell
-                      row={row}
-                      name="companySignatureName"
-                      onChange={onChange}
-                    />
-                    <CustomTableCell
-                      row={row}
-                      name="documentName"
-                      onChange={onChange}
-                    />
-                    <CustomTableCell
-                      row={row}
-                      name="documentStatus"
-                      onChange={onChange}
-                    />
-                    <CustomTableCell
-                      row={row}
-                      name="documentType"
-                      onChange={onChange}
-                    />
-                    <CustomTableCell
-                      row={row}
-                      name="employeeNumber"
-                      onChange={onChange}
-                    />
-                    <CustomTableCell
-                      row={row}
-                      name="employeeSigDate"
-                      onChange={onChange}
-                    />
-                    <CustomTableCell
-                      row={row}
-                      name="employeeSignatureName"
-                      onChange={onChange}
-                    />
-                    <TableCell>
-                      {row.isEditMode ? (
-                        <>
-                          <IconButton
-                            aria-label="done"
-                            color="success"
-                            onClick={() => handleSetCompany(row)}
-                          >
-                            <DoneIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label="revert"
-                            onClick={() => onRevert(row)}
-                          >
-                            <DoNotDisturbIcon />
-                          </IconButton>
-                        </>
-                      ) : (
-                        <>
-                          <IconButton
-                            aria-label="edit"
-                            onClick={() => onToggleEditMode(row.id!)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            aria-label="delete"
-                            color="warning"
-                            onClick={() => deleteCompany(row.id!)}
-                          >
-                            <DeleteOutlineIcon />
-                          </IconButton>
-                        </>
-                      )}
+          <div style={{ overflow: "hidden" }}>
+            {isFetching && (
+              <CircularProgress
+                size={60}
+                sx={{ position: "absolute", top: "50%", left: "50%" }}
+              />
+            )}
+            <TableContainer component={Paper} sx={{ maxHeight: "93vh" }}>
+              <Table stickyHeader>
+                <TableHead>
+                  <TableRow sx={{ "& > th": { fontWeight: 700 } }}>
+                    <TableCell>Company Sig Date</TableCell>
+                    <TableCell>Company Signature Name</TableCell>
+                    <TableCell>Document Name</TableCell>
+                    <TableCell>Document Status</TableCell>
+                    <TableCell>Document Type</TableCell>
+                    <TableCell>Employee Number</TableCell>
+                    <TableCell>Employee Sig Date</TableCell>
+                    <TableCell>Employee Signature Name</TableCell>
+                    <TableCell width={120} />
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tableRows?.map((row: ICompanyData) => (
+                    <TableRow key={row.id || dayjs().valueOf()}>
+                      <CustomTableCell
+                        row={row}
+                        name="companySigDate"
+                        onChangeDate={onChangeDate}
+                      />
+                      <CustomTableCell
+                        row={row}
+                        name="companySignatureName"
+                        onChange={onChange}
+                      />
+                      <CustomTableCell
+                        row={row}
+                        name="documentName"
+                        onChange={onChange}
+                      />
+                      <CustomTableCell
+                        row={row}
+                        name="documentStatus"
+                        onChange={onChange}
+                      />
+                      <CustomTableCell
+                        row={row}
+                        name="documentType"
+                        onChange={onChange}
+                      />
+                      <CustomTableCell
+                        row={row}
+                        name="employeeNumber"
+                        onChange={onChange}
+                      />
+                      <CustomTableCell
+                        row={row}
+                        name="employeeSigDate"
+                        onChangeDate={onChangeDate}
+                      />
+                      <CustomTableCell
+                        row={row}
+                        name="employeeSignatureName"
+                        onChange={onChange}
+                      />
+                      <TableCell padding="none" sx={{ position: "relative" }}>
+                        {row.isEditMode ? (
+                          <>
+                            {(isLoadingCreateReq &&
+                              row.id === addCompanyArgs?.id) ||
+                            (isLoadingSetReq &&
+                              row.id === setCompanyArgs?.id) ? (
+                              <IconButton disabled>
+                                <CircularProgress size={24} color="success" />
+                              </IconButton>
+                            ) : (
+                              <IconButton
+                                aria-label="done"
+                                color="success"
+                                onClick={() => handleSetCompany(row)}
+                              >
+                                <DoneIcon />
+                              </IconButton>
+                            )}
+                            <IconButton
+                              aria-label="revert"
+                              onClick={() => onRevert(row)}
+                            >
+                              <DoNotDisturbIcon />
+                            </IconButton>
+                          </>
+                        ) : (
+                          <>
+                            <IconButton
+                              aria-label="edit"
+                              onClick={() => onToggleEditMode(row.id!)}
+                            >
+                              <EditIcon />
+                            </IconButton>
+
+                            {isLoadingDeleteReq &&
+                            row.id === deleteCompanyArgs ? (
+                              <IconButton disabled>
+                                <CircularProgress size={24} color="warning" />
+                              </IconButton>
+                            ) : (
+                              <IconButton
+                                aria-label="delete"
+                                color="warning"
+                                onClick={() => deleteCompany(row.id!)}
+                              >
+                                <DeleteOutlineIcon />
+                              </IconButton>
+                            )}
+                          </>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow
+                    sx={{
+                      "& > td": {
+                        padding: "4px 0px 0px 0px",
+                      },
+                    }}
+                  >
+                    <TableCell colSpan={8} />
+                    <TableCell align="left">
+                      <IconButton
+                        aria-label="add"
+                        onClick={() => addNewCompany()}
+                      >
+                        <AddIcon />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
-                ))}
-                <TableRow>
-                  <TableCell colSpan={8} />
-                  <TableCell>
-                    <IconButton
-                      aria-label="add"
-                      onClick={() => addNewCompany()}
-                    >
-                      <AddIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </div>
         )
       )}
     </div>
