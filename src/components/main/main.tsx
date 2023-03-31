@@ -47,7 +47,6 @@ const Main = () => {
   const [tableRows, setTableRows] = useState<ICompanyData[]>([]);
   const [error, setError] = useState<string>("");
   const [isErrorOpen, setIsErrorOpen] = useState(false);
-  console.log(tableRows);
 
   const errorHandler = (e: {
     data: {

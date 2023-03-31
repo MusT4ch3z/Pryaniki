@@ -17,7 +17,11 @@ export const Navbar = () => {
         <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
           Pryaniki
         </Typography>
-        <Button color="primary" variant="contained" onClick={handleLogout}>
+        <Button
+          color="primary"
+          variant="contained"
+          onClick={() => handleLogout()}
+        >
           Logout
         </Button>
       </Toolbar>

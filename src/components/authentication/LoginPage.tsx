@@ -1,6 +1,5 @@
 import * as React from "react";
 import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
@@ -13,6 +12,7 @@ import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import { Alert, Slide, SlideProps, Snackbar } from "@mui/material";
 import { useState } from "react";
+import { LoadingButton } from "@mui/lab";
 
 const theme = createTheme();
 
@@ -23,7 +23,7 @@ export const SlideTransition = (props: SlideProps) => {
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [logIn] = useLogInMutation();
+  const [logIn, { isLoading: isLoadingLoginReq }] = useLogInMutation();
   const [error, setError] = useState<string>("");
   const [isErrorOpen, setIsErrorOpen] = useState(false);
   const fromPage = location.state?.from?.pathname || "/";
@@ -109,14 +109,15 @@ export default function LoginPage() {
               id="password"
               autoComplete="current-password"
             />
-            <Button
+            <LoadingButton
+              loading={isLoadingLoginReq}
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign In
-            </Button>
+              <span>Sign In</span>
+            </LoadingButton>
           </Box>
         </Box>
       </Container>
