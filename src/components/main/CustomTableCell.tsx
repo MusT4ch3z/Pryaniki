@@ -4,8 +4,7 @@ import dayjs from "dayjs";
 import { DesktopDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DateValidationError } from "@mui/x-date-pickers/internals";
-import { PickerChangeHandler } from "@mui/x-date-pickers/internals/hooks/usePicker/usePickerValue";
+import { styles } from "../../styles";
 
 export const CustomTableCell = ({
   row,
@@ -20,23 +19,20 @@ export const CustomTableCell = ({
     row: ICompanyData
   ) => void;
   onChangeDate?: (
-    e: PickerChangeHandler<dayjs.Dayjs | null, DateValidationError> | string,
+    e: string,
     row: ICompanyData,
-    name: string
+    name: keyof ICompanyData
   ) => void;
 }) => {
   const dateDisplayFormat = "DD/MM/YYYY HH:mm";
   const { isEditMode } = row;
   return (
-    <TableCell align="left" sx={{ padding: "8px 8px 8px 16px" }}>
+    <TableCell align="left" sx={styles.customTableCell}>
       {isEditMode ? (
         name.includes("Date") ? (
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DesktopDatePicker
-              sx={{
-                "& > div > input": { padding: "12px 0px 12px 12px" },
-                maxWidth: 210,
-              }}
+              sx={styles.datePicker}
               format={dateDisplayFormat}
               value={row && dayjs(row[name] as string)}
               onChange={(e) => onChangeDate!(e!.toISOString(), row, name)}
@@ -52,7 +48,7 @@ export const CustomTableCell = ({
       ) : name === "companySigDate" || name === "employeeSigDate" ? (
         dayjs(row[name]).format(dateDisplayFormat)
       ) : (
-        row[name]
+        (row[name] as string)
       )}
     </TableCell>
   );

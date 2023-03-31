@@ -29,6 +29,8 @@ import { CustomTableCell } from "./CustomTableCell";
 import { ICompanyData } from "../../types";
 import dayjs from "dayjs";
 import { SlideTransition } from "../authentication/LoginPage";
+import Spinner from "../Spinner";
+import { styles } from "../../styles";
 
 const Main = () => {
   const { data, isLoading, isSuccess, isFetching } = useGetCompanyQuery();
@@ -47,6 +49,17 @@ const Main = () => {
   const [tableRows, setTableRows] = useState<ICompanyData[]>([]);
   const [error, setError] = useState<string>("");
   const [isErrorOpen, setIsErrorOpen] = useState(false);
+
+  const columns = [
+    "companySigDate",
+    "companySignatureName",
+    "documentName",
+    "documentStatus",
+    "documentType",
+    "employeeNumber",
+    "employeeSigDate",
+    "employeeSignatureName",
+  ];
 
   const errorHandler = (e: {
     data: {
@@ -92,7 +105,7 @@ const Main = () => {
     setTableRows(newRows);
   };
 
-  const onChangeDate = (e: any, row: ICompanyData, name: string) => {
+  const onChangeDate = (e: string, row: ICompanyData, name: string) => {
     const value = e!;
     const { id } = row;
     const newRows = tableRows.map((row: ICompanyData) => {
@@ -195,77 +208,38 @@ const Main = () => {
         </Alert>
       </Snackbar>
       {isLoading ? (
-        <CircularProgress
-          size={60}
-          sx={{ position: "absolute", top: "50%", left: "50%" }}
-        />
+        <Spinner />
       ) : (
         isSuccess && (
           <div style={{ overflow: "hidden" }}>
-            {isFetching && (
-              <CircularProgress
-                size={60}
-                sx={{ position: "absolute", top: "50%", left: "50%" }}
-              />
-            )}
+            {isFetching && <Spinner />}
             <TableContainer component={Paper} sx={{ maxHeight: "93vh" }}>
               <Table stickyHeader>
                 <TableHead>
-                  <TableRow sx={{ "& > th": { fontWeight: 700 } }}>
-                    <TableCell>Company Sig Date</TableCell>
-                    <TableCell>Company Signature Name</TableCell>
-                    <TableCell>Document Name</TableCell>
-                    <TableCell>Document Status</TableCell>
-                    <TableCell>Document Type</TableCell>
-                    <TableCell>Employee Number</TableCell>
-                    <TableCell>Employee Sig Date</TableCell>
-                    <TableCell>Employee Signature Name</TableCell>
+                  <TableRow sx={styles.tableRowHeader}>
+                    {columns.map((col) => (
+                      <TableCell>
+                        {col
+                          .replace(/([A-Z])/g, " $1")
+                          .charAt(0)
+                          .toUpperCase() +
+                          col.replace(/([A-Z])/g, " $1").slice(1)}
+                      </TableCell>
+                    ))}
                     <TableCell width={120} />
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {tableRows?.map((row: ICompanyData) => (
                     <TableRow key={row.id || dayjs().valueOf()}>
-                      <CustomTableCell
-                        row={row}
-                        name="companySigDate"
-                        onChangeDate={onChangeDate}
-                      />
-                      <CustomTableCell
-                        row={row}
-                        name="companySignatureName"
-                        onChange={onChange}
-                      />
-                      <CustomTableCell
-                        row={row}
-                        name="documentName"
-                        onChange={onChange}
-                      />
-                      <CustomTableCell
-                        row={row}
-                        name="documentStatus"
-                        onChange={onChange}
-                      />
-                      <CustomTableCell
-                        row={row}
-                        name="documentType"
-                        onChange={onChange}
-                      />
-                      <CustomTableCell
-                        row={row}
-                        name="employeeNumber"
-                        onChange={onChange}
-                      />
-                      <CustomTableCell
-                        row={row}
-                        name="employeeSigDate"
-                        onChangeDate={onChangeDate}
-                      />
-                      <CustomTableCell
-                        row={row}
-                        name="employeeSignatureName"
-                        onChange={onChange}
-                      />
+                      {columns.map((col) => (
+                        <CustomTableCell
+                          row={row}
+                          name={col as keyof ICompanyData}
+                          onChange={onChange}
+                          onChangeDate={onChangeDate}
+                        />
+                      ))}
                       <TableCell padding="none" sx={{ position: "relative" }}>
                         {row.isEditMode ? (
                           <>
@@ -320,13 +294,7 @@ const Main = () => {
                       </TableCell>
                     </TableRow>
                   ))}
-                  <TableRow
-                    sx={{
-                      "& > td": {
-                        padding: "4px 0px 0px 0px",
-                      },
-                    }}
-                  >
+                  <TableRow sx={styles.lastTableRow}>
                     <TableCell colSpan={8} />
                     <TableCell align="left">
                       <IconButton
