@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/Pryaniki/static/css/main.4eecd90b.css",
-    "main.js": "/Pryaniki/static/js/main.f4cba975.js",
+    "main.js": "/Pryaniki/static/js/main.109ccdd3.js",
     "index.html": "/Pryaniki/index.html",
     "main.4eecd90b.css.map": "/Pryaniki/static/css/main.4eecd90b.css.map",
-    "main.f4cba975.js.map": "/Pryaniki/static/js/main.f4cba975.js.map"
+    "main.109ccdd3.js.map": "/Pryaniki/static/js/main.109ccdd3.js.map"
   },
   "entrypoints": [
     "static/css/main.4eecd90b.css",
-    "static/js/main.f4cba975.js"
+    "static/js/main.109ccdd3.js"
   ]
 }
