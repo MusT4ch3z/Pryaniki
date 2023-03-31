@@ -11,7 +11,9 @@ React, TypeScript, RTK Query, Material UI
 ## About
 
 The small SPA application interacting with the server.
-__
-1.Login Page__
-2.Table of data__
+
+1.Login Page
+
+2.Table of data
+
 3.CRUD - operations
